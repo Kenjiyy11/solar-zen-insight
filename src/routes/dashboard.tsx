@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Sun, Zap, Bell, Brain, TrendingDown, TrendingUp, Calendar, Home } from "lucide-react";
 import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Legend,
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Cell, Legend,
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard")({
@@ -27,17 +27,20 @@ function Dashboard() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(house.rooms[0].id);
   const selectedRoom = house.rooms.find((r) => r.id === selectedRoomId) ?? null;
 
-  // Live consumption tick (small jitter for "ao vivo")
+  // Live consumption tick (client-only to avoid SSR hydration mismatch)
   const [tick, setTick] = useState(0);
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
     const t = setInterval(() => setTick((x) => x + 1), 2000);
     return () => clearInterval(t);
   }, []);
-  const jitter = (base: number) => +(base * (0.95 + ((tick * 37) % 11) / 100)).toFixed(0);
+  const jitter = (base: number) =>
+    mounted ? +(base * (0.95 + ((tick * 37) % 11) / 100)).toFixed(0) : base;
 
   const totalW = jitter(houseWatts(house));
   const hourly = useMemo(() => generateHourly(house.id), [house.id]);
-  const solarNowKw = hourly[new Date().getHours()].solar;
+  const solarNowKw = mounted ? hourly[new Date().getHours()].solar : hourly[12].solar;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -338,7 +341,7 @@ function InsightsPanel({ house }: { house: House }) {
                 <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid oklch(0.90 0.02 140)" }} />
                 <Bar dataKey="diff" name="Da rede (kWh)" radius={[6, 6, 0, 0]}>
                   {grouped.map((d, i) => (
-                    <rect key={i} fill={d.diff > 0 ? "oklch(0.65 0.20 30)" : "oklch(0.65 0.18 150)"} />
+                    <Cell key={i} fill={d.diff > 0 ? "oklch(0.65 0.20 30)" : "oklch(0.65 0.18 150)"} />
                   ))}
                 </Bar>
               </BarChart>
