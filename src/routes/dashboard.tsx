@@ -341,7 +341,7 @@ function InsightsPanel({ house }: { house: House }) {
                 <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid oklch(0.90 0.02 140)" }} />
                 <Bar dataKey="diff" name="Da rede (kWh)" radius={[6, 6, 0, 0]}>
                   {grouped.map((d, i) => (
-                    <rect key={i} fill={d.diff > 0 ? "oklch(0.65 0.20 30)" : "oklch(0.65 0.18 150)"} />
+                    <Cell key={i} fill={d.diff > 0 ? "oklch(0.65 0.20 30)" : "oklch(0.65 0.18 150)"} />
                   ))}
                 </Bar>
               </BarChart>
