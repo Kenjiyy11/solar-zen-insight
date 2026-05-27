@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { houses, roomWatts, houseWatts, generateHistory, generateHourly, type House, type Room } from "@/lib/mock-data";
+import { houses as initialHouses, roomWatts, houseWatts, generateHistory, generateHourly, type House, type Room } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sun, Zap, Bell, Brain, TrendingDown, TrendingUp, Calendar, Home } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Sun, Zap, Bell, Brain, TrendingDown, TrendingUp, Calendar, Home, Power } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Cell, Legend,
 } from "recharts";
@@ -22,10 +23,30 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
+  const [houses, setHouses] = useState<House[]>(() => structuredClone(initialHouses));
   const [houseId, setHouseId] = useState(houses[0].id);
   const house = houses.find((h) => h.id === houseId)!;
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(house.rooms[0].id);
   const selectedRoom = house.rooms.find((r) => r.id === selectedRoomId) ?? null;
+
+  const toggleAppliance = (roomId: string, applianceName: string) => {
+    setHouses((prev) =>
+      prev.map((h) =>
+        h.id !== houseId ? h : {
+          ...h,
+          rooms: h.rooms.map((r) =>
+            r.id !== roomId ? r : {
+              ...r,
+              appliances: r.appliances.map((a) =>
+                a.name === applianceName ? { ...a, on: !a.on } : a
+              ),
+            }
+          ),
+        }
+      )
+    );
+  };
+
 
   // Live consumption tick (client-only to avoid SSR hydration mismatch)
   const [tick, setTick] = useState(0);
@@ -117,7 +138,7 @@ function Dashboard() {
               </Card>
 
               {/* Room detail */}
-              <RoomDetail room={selectedRoom} jitter={jitter} />
+              <RoomDetail room={selectedRoom} jitter={jitter} onToggle={toggleAppliance} />
             </div>
           </TabsContent>
 
@@ -195,10 +216,11 @@ function FloorPlan({ house, selectedId, onSelect, jitter }: { house: House; sele
   );
 }
 
-function RoomDetail({ room, jitter }: { room: Room | null; jitter: (n: number) => number }) {
+function RoomDetail({ room, jitter, onToggle }: { room: Room | null; jitter: (n: number) => number; onToggle: (roomId: string, applianceName: string) => void }) {
   if (!room) return <Card className="p-6 text-sm text-muted-foreground">Selecione um cômodo na planta.</Card>;
   const total = jitter(roomWatts(room));
   const alert = roomWatts(room) > 1000;
+  const activeCount = room.appliances.filter((a) => a.on).length;
   return (
     <Card className="p-5">
       <div className="mb-1 flex items-center justify-between">
@@ -209,19 +231,30 @@ function RoomDetail({ room, jitter }: { room: Room | null; jitter: (n: number) =
       <div className="mt-3 flex items-baseline gap-2">
         <span className="text-4xl font-semibold tabular-nums">{total}</span>
         <span className="text-muted-foreground">W</span>
-        <span className="ml-auto text-xs text-muted-foreground">≈ {(total / 1000).toFixed(2)} kW</span>
+        <span className="ml-auto text-xs text-muted-foreground">≈ {(total / 1000).toFixed(2)} kW · {activeCount}/{room.appliances.length} ligados</span>
       </div>
 
       <div className="mt-5">
-        <h3 className="mb-2 text-sm font-medium">Aparelhos</h3>
+        <h3 className="mb-2 flex items-center gap-2 text-sm font-medium">
+          <Power className="h-4 w-4 text-muted-foreground" /> Aparelhos
+        </h3>
         <ul className="divide-y rounded-lg border">
           {room.appliances.map((a) => (
-            <li key={a.name} className="flex items-center justify-between px-3 py-2.5 text-sm">
-              <div className="flex items-center gap-3">
-                <span className={`h-2 w-2 rounded-full ${a.on ? "bg-[var(--success)]" : "bg-muted-foreground/40"}`} />
-                <span>{a.name}</span>
+            <li key={a.name} className="flex items-center justify-between gap-3 px-3 py-3 text-sm">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className={`h-2 w-2 shrink-0 rounded-full transition-colors ${a.on ? "bg-[var(--success)]" : "bg-muted-foreground/40"}`} />
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{a.name}</div>
+                  <div className="text-xs text-muted-foreground tabular-nums">
+                    {a.on ? `${a.watts} W agora` : `${a.watts} W quando ligado`}
+                  </div>
+                </div>
               </div>
-              <span className="tabular-nums text-muted-foreground">{a.on ? `${a.watts} W` : "desligado"}</span>
+              <Switch
+                checked={a.on}
+                onCheckedChange={() => onToggle(room.id, a.name)}
+                aria-label={`Ligar/desligar ${a.name}`}
+              />
             </li>
           ))}
         </ul>

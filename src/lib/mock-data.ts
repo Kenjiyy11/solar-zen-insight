@@ -28,11 +28,11 @@ export const houses: House[] = [
       ]},
       { id: "cozinha", name: "Cozinha", x: 50, y: 2, w: 48, h: 40, appliances: [
         { name: "Geladeira", watts: 180, on: true },
-        { name: "Micro-ondas", watts: 0, on: false },
+        { name: "Micro-ondas", watts: 1100, on: false },
         { name: "Iluminação", watts: 30, on: true },
       ]},
       { id: "quarto1", name: "Quarto 1", x: 2, y: 44, w: 30, h: 54, appliances: [
-        { name: "Ar-condicionado", watts: 0, on: false },
+        { name: "Ar-condicionado", watts: 1300, on: false },
         { name: "Carregador", watts: 18, on: true },
         { name: "Iluminação", watts: 20, on: true },
       ]},
@@ -41,7 +41,7 @@ export const houses: House[] = [
         { name: "Iluminação", watts: 15, on: true },
       ]},
       { id: "banheiro", name: "Banheiro", x: 34, y: 76, w: 30, h: 22, appliances: [
-        { name: "Chuveiro elétrico", watts: 0, on: false },
+        { name: "Chuveiro elétrico", watts: 4500, on: false },
         { name: "Iluminação", watts: 12, on: true },
       ]},
       { id: "lavanderia", name: "Lavanderia", x: 66, y: 44, w: 32, h: 54, appliances: [
@@ -62,7 +62,7 @@ export const houses: House[] = [
       ]},
       { id: "cozinha", name: "Cozinha", x: 64, y: 2, w: 34, h: 50, appliances: [
         { name: "Geladeira", watts: 200, on: true },
-        { name: "Forno", watts: 0, on: false },
+        { name: "Forno", watts: 2000, on: false },
       ]},
       { id: "quarto", name: "Suíte", x: 2, y: 54, w: 60, h: 44, appliances: [
         { name: "Aquecedor", watts: 1200, on: true },
