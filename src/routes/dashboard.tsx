@@ -138,7 +138,7 @@ function Dashboard() {
               </Card>
 
               {/* Room detail */}
-              <RoomDetail room={selectedRoom} jitter={jitter} />
+              <RoomDetail room={selectedRoom} jitter={jitter} onToggle={toggleAppliance} />
             </div>
           </TabsContent>
 
