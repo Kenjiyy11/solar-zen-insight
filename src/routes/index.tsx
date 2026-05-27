@@ -33,9 +33,14 @@ function Landing() {
             <a href="#como" className="hover:text-foreground">Como funciona</a>
             <a href="#beneficios" className="hover:text-foreground">Benefícios</a>
           </nav>
-          <Button asChild size="sm">
-            <Link to="/dashboard">Abrir painel</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/auth">Entrar</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link to="/casas">Minhas casas</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
