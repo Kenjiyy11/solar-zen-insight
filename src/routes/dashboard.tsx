@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { houses, roomWatts, houseWatts, generateHistory, generateHourly, type House, type Room } from "@/lib/mock-data";
+import { houses as initialHouses, roomWatts, houseWatts, generateHistory, generateHourly, type House, type Room } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sun, Zap, Bell, Brain, TrendingDown, TrendingUp, Calendar, Home } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Sun, Zap, Bell, Brain, TrendingDown, TrendingUp, Calendar, Home, Power } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Cell, Legend,
 } from "recharts";
@@ -22,10 +23,30 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
+  const [houses, setHouses] = useState<House[]>(() => structuredClone(initialHouses));
   const [houseId, setHouseId] = useState(houses[0].id);
   const house = houses.find((h) => h.id === houseId)!;
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(house.rooms[0].id);
   const selectedRoom = house.rooms.find((r) => r.id === selectedRoomId) ?? null;
+
+  const toggleAppliance = (roomId: string, applianceName: string) => {
+    setHouses((prev) =>
+      prev.map((h) =>
+        h.id !== houseId ? h : {
+          ...h,
+          rooms: h.rooms.map((r) =>
+            r.id !== roomId ? r : {
+              ...r,
+              appliances: r.appliances.map((a) =>
+                a.name === applianceName ? { ...a, on: !a.on } : a
+              ),
+            }
+          ),
+        }
+      )
+    );
+  };
+
 
   // Live consumption tick (client-only to avoid SSR hydration mismatch)
   const [tick, setTick] = useState(0);
